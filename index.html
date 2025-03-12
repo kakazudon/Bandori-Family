@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<meta property="og:type" content="website">
+    <meta property="og:title" content="邦邦世家 台詞搜尋">
+	<meta property="og:url" content="https://bandori-family.pages.dev/">
+	<meta property="og:image" content="https://bandori-family.pages.dev/src/assets/og-preview.jpg">
+	<meta property="og:description" content="🐧 邦邦世家 🐧 主演：高松燈、唐愛農、宋友齡、崔莉希、廖樂奈、馮川祥、穆姿敏、詹淑華、范海鈴、游天賜">
+	
+    <title>邦邦世家 台詞搜尋</title>
+    <link rel="icon" type="image/x-icon" href="src/assets/favicon.ico">
+    <!-- Font Awesome 圖標庫 -->
+    <link rel="stylesheet" href="src/assets/fontawesome-free-6.4.0-web/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #DBB000;
+            --secondary-color: #ffffff;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 0;
+            background: var(--primary-color);
+            color: var(--secondary-color);
+        }
+
+        #searchContainer {
+            width: 80%;           
+            max-width: 600px;     
+            margin: 0 auto;       
+            text-align: center;   
+            padding: 20px;
+        }
+
+        #searchBox {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid var(--secondary-color);
+            border-radius: 25px;
+            outline: none;
+            transition: border-color 0.3s;
+            background: var(--secondary-color);
+        }
+        
+        #results { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            gap: 10px; 
+        }
+        
+        .result-item {
+            position: relative;
+            margin: 10px;
+            overflow: hidden;
+            transition: transform 0.3s;
+        }
+        
+        .result-item:hover {
+            transform: scale(1.10); /* hover放大 */
+            z-index: 100; /* 確保放大時覆蓋其他元素 */
+        }
+        
+        .result-item img {
+            width: 400px;
+        }
+        
+        .button-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: none;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .result-item:hover .button-container {
+            display: flex;
+            opacity: 1;
+        }
+        
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            background: #004488;
+            color: #ffffff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .icon-btn:hover {
+            background: #44aaff;
+            transform: scale(1.1);
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #272727;
+            color: #ffffff;
+            padding: 10px 20px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        /* 圖片放大預覽樣式 */
+        .preview-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.75);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            cursor: zoom-out;
+        }
+
+        .preview-image {
+            max-width: 90%;
+            max-height: 90%;
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.6);
+            animation: imageZoom 0.3s ease;
+        }
+
+        #scrollToTopBtn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            border: 3px solid var(--primary-color);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: opacity 0.2s ease;
+            opacity: 0;
+            z-index: 200;
+        }
+    
+        #scrollToTopBtn:hover {
+            background-color: #bfbfbf;
+            transform: scale(1.1);
+        }
+
+        .footer-links {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            background-color: var(--secondary-color);
+            padding: 10px 0;
+        }
+
+        .footer-link-item {
+            list-style: none;
+        }
+
+        .footer-link-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-size: 16px;
+            padding: 10px 20px;
+            display: block;
+            border-radius: 5px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .footer-link-item a:hover {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+        }
+
+        .footer-info {
+            position: absolute;
+            bottom: 10px;
+            right: 20px;
+            color: var(--primary-color);
+            font-size: 12px;
+            font-family: Arial, sans-serif;
+            text-align: right;
+        }
+
+        @keyframes imageZoom {
+            from {
+                transform: scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* 手機版樣式 */
+        @media (max-width: 768px) {
+            #searchBox {
+                width: 80%;
+            }
+            
+            .result-item img {
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .icon-btn {
+                width: 30px;
+                height: 30px;
+            }
+
+            .preview-image {
+                max-width: 100%;
+                max-height: 70%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="searchContainer">
+        <h1>邦邦世家 台詞搜尋</h1>
+        <input type="text" id="searchBox" placeholder="輸入關鍵字...">
+    </div>
+
+    <div class="footer-links">
+        <div class="footer-link-item"><a href="https://mygo-searcher.pages.dev/">MyGO!!!!! 台詞搜尋</a></div>
+        <div class="footer-link-item"><a href="https://ave-mujica-searcher.pages.dev/">Ave Mujica 台詞搜尋</a></div>
+        <div class="footer-link-item"><a href="https://forms.gle/QtSv3wuDzGuDxhPA9">截圖錯誤回報</a></div>
+        <div class="footer-link-item"><a href="https://forms.gle/xj11uU6o53bHXHuGA">問題 與 建議</a></div>
+        <div class="footer-link-item"><a href="#placeholder">GitHub</a></div>
+
+        <div class="footer-info">
+            <p>made by kakatsudon</p>
+        </div>
+    </div>
+
+    <div id="results"></div>
+    <button id="scrollToTopBtn">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+    
+    <div id="toast" class="toast"></div>
+
+    
+
+    <script>
+        let images = [];
+
+        // 顯示提示訊息
+        function showToast(message) {
+            const toast = document.getElementById("toast");
+            toast.textContent = message;
+            toast.style.display = "block";
+            setTimeout(() => {
+                toast.style.display = "none";
+            }, 2000);
+        }
+
+        // 複製圖片功能
+        async function copyImage(img) {
+            fetch(img.src)
+                .then(response => response.blob())
+                .then(blob => {
+                    return new Promise(resolve => {
+                        const canvas = document.createElement("canvas");
+                        const ctx = canvas.getContext("2d");
+                        const image = new Image();
+                        image.onload = () => {
+                            canvas.width = image.width;
+                            canvas.height = image.height;
+                            ctx.drawImage(image, 0, 0);
+                            canvas.toBlob(resolve, "image/png");
+                        };
+                        image.src = URL.createObjectURL(blob);
+                    });
+                })
+                .then(pngBlob => {
+                    navigator.clipboard.write([new ClipboardItem({ "image/png": pngBlob })])
+                        .then(() => showToast("圖片已複製到剪貼簿"))
+                        .catch(err => showToast("複製失敗: " + err));
+                });
+        }
+
+        // 下載圖片功能
+        function downloadImage(imgSrc, filename) {
+            const link = document.createElement('a');
+            link.href = imgSrc;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function createPreview(imageSrc) {
+            // 創建預覽層
+            const overlay = document.createElement('div');
+            overlay.className = 'preview-overlay';
+            
+            // 放大圖片
+            const img = document.createElement('img');
+            img.src = imageSrc;
+            img.className = 'preview-image';
+            
+            // 組合元素
+            overlay.appendChild(img);
+            document.body.appendChild(overlay);
+            
+            // 關閉功能
+            const closePreview = () => {
+                overlay.remove();
+                document.body.style.overflow = 'auto';
+            };
+            
+            // 點擊事件
+            overlay.addEventListener('click', (e) => {
+                if(e.target === overlay) {
+                    closePreview();
+                }
+            });
+            
+            // ESC 鍵關閉
+            document.addEventListener('keydown', (e) => {
+                if(e.key === 'Escape') closePreview();
+            });
+            
+            // 禁止背景滾動
+            document.body.style.overflow = 'hidden';
+        }
+
+
+        // 搜尋功能
+        document.getElementById("searchBox").addEventListener("input", function() {
+            const query = this.value.trim().toLowerCase();
+            const resultsDiv = document.getElementById("results");
+            resultsDiv.innerHTML = "";
+
+            if (!query) return;
+
+            const filtered = images.filter(filename => 
+                filename.toLowerCase().includes(query)
+            );
+
+            filtered.sort((a, b) => {
+                const epA = a.match(/episode(\d+)/)?.[1] || 0;
+                const epB = b.match(/episode(\d+)/)?.[1] || 0;
+                return epA - epB;
+            });
+
+            filtered.forEach(filename => {
+                const item = document.createElement('div');
+                item.className = 'result-item';
+
+                const img = document.createElement('img');
+
+                const encodedFilename = encodeURIComponent(filename); //處理一些不支持的字元
+
+                img.src = `src/assets/images/${encodedFilename}`;
+                img.alt = filename;
+
+                img.onerror = () => {
+                    console.log(`Image ${filename} not found`);
+                };
+
+                img.addEventListener('click', () => {
+                    createPreview(img.src);
+                });
+
+                const btnContainer = document.createElement('div');
+                btnContainer.className = 'button-container';
+
+                // 複製按鈕
+                const copyBtn = document.createElement('button');
+                copyBtn.title = "複製圖片至剪貼簿";
+                copyBtn.className = 'icon-btn';
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i>';
+                copyBtn.onclick = () => copyImage(img);
+
+                // 下載按鈕
+                const downloadBtn = document.createElement('button');
+                downloadBtn.title = "下載圖片";
+                downloadBtn.className = 'icon-btn';
+                downloadBtn.innerHTML = '<i class="fas fa-download"></i>';
+                downloadBtn.onclick = () => downloadImage(img.src, filename);
+
+                btnContainer.appendChild(copyBtn);
+                btnContainer.appendChild(downloadBtn);
+                item.appendChild(img);
+                item.appendChild(btnContainer);
+                resultsDiv.appendChild(item);
+            });
+        });
+
+        window.onscroll = function() {
+            let scrollToTopBtn = document.getElementById("scrollToTopBtn");
+
+            // 判斷滾動位置
+            if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+                setTimeout(function() {
+                    scrollToTopBtn.style.opacity = 1;  // 漸顯透明度
+                }, 5);  // 延遲設置透明度，讓過渡生效
+            } else {
+                scrollToTopBtn.style.opacity = 0;  // 減少透明度
+            }
+        };
+
+
+        // 點擊按鈕後回到頁面頂部
+        scrollToTopBtn.onclick = function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
+
+        // 初始化載入資料
+        fetch("src/assets/data.json")
+            .then(response => response.json())
+            .then(data => images = data)
+            .catch(() => showToast("無法載入資料"));
+    </script>
+</body>
+</html>
